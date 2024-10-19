@@ -34,6 +34,9 @@ A simple Tic Tac Toe game built using HTML, CSS, and JavaScript with a responsiv
 - **CSS**
 - **JavaScript**
 
+[Play the Game](#) – *https://basantnath.github.io/Tic-Tac-Toe-Master/*
+
+
 ## Developed by
 
 This project was developed with ❤️ by Basant.
