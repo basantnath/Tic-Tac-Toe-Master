@@ -1,0 +1,580 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Simple Tic Tac Toe</title>
+    <link href="https://fonts.googleapis.com/css2?family=Poppins:wght@400;600&family=Montserrat:wght@700&display=swap" rel="stylesheet">
+    <style>
+        :root {
+            --background: #f0f4f8;
+            --card-bg: #ffffff;
+            --text: #2d3748;
+            --border: #e2e8f0;
+            --accent: #4299e1;
+            --accent-text: #ffffff;
+            --muted: #edf2f7;
+            --button-bg: #4299e1;
+            --button-text: #ffffff;
+            --hover: #3182ce;
+            --developer-text: #2b6cb0;
+        }
+
+        .dark {
+            --background: #1a202c;
+            --card-bg: #2d3748;
+            --text: #e2e8f0;
+            --border: #4a5568;
+            --accent: #4299e1;
+            --accent-text: #ffffff;
+            --muted: #2d3748;
+            --button-bg: #4299e1;
+            --button-text: #ffffff;
+            --hover: #3182ce;
+            --developer-text: #63b3ed;
+        }
+
+        * {
+            box-sizing: border-box;
+            margin: 0;
+            padding: 0;
+        }
+
+        body {
+            font-family: 'Poppins', sans-serif;
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            min-height: 100vh;
+            background-color: var(--background);
+            color: var(--text);
+            transition: background-color 0.3s, color 0.3s;
+            padding: 1rem;
+        }
+
+        .card {
+            background-color: var(--card-bg);
+            border-radius: 1rem;
+            box-shadow: 0 10px 15px -3px rgba(0, 0, 0, 0.1), 0 4px 6px -2px rgba(0, 0, 0, 0.05);
+            padding: 2rem;
+            width: 100%;
+            max-width: 400px;
+        }
+
+        h1 {
+            text-align: center;
+            color: var(--accent);
+            font-size: 2rem;
+            margin-bottom: 1.5rem;
+        }
+
+        .controls {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            margin-bottom: 1.5rem;
+        }
+
+        select, button {
+            padding: 0.5rem 1rem;
+            border: none;
+            border-radius: 0.375rem;
+            background-color: var(--button-bg);
+            color: var(--button-text);
+            cursor: pointer;
+            transition: background-color 0.3s, transform 0.1s;
+            font-family: 'Poppins', sans-serif;
+            font-weight: 600;
+            font-size: 0.875rem;
+        }
+
+        select {
+            appearance: none;
+            background-image: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' fill='white' viewBox='0 0 24 24'%3E%3Cpath d='M7 10l5 5 5-5z'/%3E%3C/svg%3E");
+            background-repeat: no-repeat;
+            background-position: right 0.5rem center;
+            background-size: 1.5em;
+            padding-right: 2.5rem;
+        }
+
+        select:hover, button:hover {
+            background-color: var(--hover);
+            transform: translateY(-2px);
+        }
+
+        .board {
+            display: grid;
+            grid-template-columns: repeat(3, 1fr);
+            gap: 0.75rem;
+            margin-bottom: 1.5rem;
+        }
+
+        .cell {
+            aspect-ratio: 1;
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            font-size: 2rem;
+            font-weight: bold;
+            background-color: var(--muted);
+            border: 2px solid var(--border);
+            border-radius: 0.5rem;
+            cursor: pointer;
+            transition: all 0.3s;
+        }
+
+        .cell:hover {
+            background-color: var(--accent);
+            color: var(--accent-text);
+            transform: scale(1.05);
+        }
+
+        .cell.highlight {
+            background-color: var(--accent);
+            color: var(--accent-text);
+            animation: pulse 1s infinite;
+        }
+
+        @keyframes pulse {
+            0% { transform: scale(1); }
+            50% { transform: scale(1.05); }
+            100% { transform: scale(1); }
+        }
+
+        .status, .score {
+            text-align: center;
+            margin-bottom: 1rem;
+            font-size: 1rem;
+        }
+
+        .actions {
+            display: flex;
+            justify-content: space-between;
+            gap: 1rem;
+        }
+
+        .actions button {
+            flex: 1;
+        }
+
+        .switch {
+            position: relative;
+            display: inline-block;
+            width: 60px;
+            height: 34px;
+        }
+
+        .switch input {
+            opacity: 0;
+            width: 0;
+            height: 0;
+        }
+
+        .slider {
+            position: absolute;
+            cursor: pointer;
+            top: 0;
+            left: 0;
+            right: 0;
+            bottom: 0;
+            background-color: var(--muted);
+            transition: .4s;
+            border-radius: 34px;
+        }
+
+        .slider:before {
+            position: absolute;
+            content: "";
+            height: 26px;
+            width: 26px;
+            left: 4px;
+            bottom: 4px;
+            background-color: var(--accent-text);
+            transition: .4s;
+            border-radius: 50%;
+        }
+
+        input:checked + .slider {
+            background-color: var(--accent);
+        }
+
+        input:checked + .slider:before {
+            transform: translateX(26px);
+        }
+
+        .modal {
+            display: none;
+            position: fixed;
+            z-index: 1;
+            left: 0;
+            top: 0;
+            width: 100%;
+            height: 100%;
+            background-color: rgba(0,0,0,0.4);
+        }
+
+        .modal-content {
+            background-color: var(--card-bg);
+            margin: 15% auto;
+            padding: 2rem;
+            border: 1px solid var(--border);
+            border-radius: 1rem;
+            width: 80%;
+            max-width: 300px;
+            text-align: center;
+        }
+
+        .close {
+            color: var(--text);
+            float: right;
+            font-size: 28px;
+            font-weight: bold;
+            cursor: pointer;
+        }
+
+        .close:hover,
+        .close:focus {
+            color: var(--accent);
+            text-decoration: none;
+        }
+
+        #timer {
+            font-size: 1rem;
+            text-align: center;
+            margin-bottom: 1rem;
+        }
+
+        #aiThinking {
+            text-align: center;
+            margin-top: 1rem;
+            font-style: italic;
+        }
+
+        .developer {
+            font-family: 'Montserrat', sans-serif;
+            font-size: 0.875rem;
+            text-align: center;
+            margin-top: 1.5rem;
+            padding: 0.75rem;
+            background-color: var(--muted);
+            border-radius: 0.5rem;
+            color: var(--developer-text);
+            transition: all 0.3s ease;
+        }
+
+        .developer:hover {
+            transform: translateY(-2px);
+            box-shadow: 0 4px 6px -1px rgba(0, 0, 0, 0.1), 0 2px 4px -1px rgba(0, 0, 0, 0.06);
+        }
+
+        @media (max-width: 480px) {
+            .card {
+                padding: 1.5rem;
+            }
+
+            h1 {
+                font-size: 1.5rem;
+            }
+
+            .controls {
+                flex-direction: column;
+                gap: 1rem;
+            }
+
+            select, button {
+                width: 100%;
+            }
+
+            .cell {
+                font-size: 1.5rem;
+            }
+        }
+    </style>
+</head>
+<body>
+    <div class="card">
+        <h1>Simple Tic Tac Toe</h1>
+        <div class="controls">
+            <select id="gameMode">
+                <option value="single">Single Player</option>
+                <option value="multi">Multiplayer</option>
+            </select>
+            <select id="difficulty">
+                <option value="easy">Easy</option>
+                <option value="medium">Medium</option>
+                <option value="hard">Hard</option>
+            </select>
+            <label class="switch">
+                <input type="checkbox" id="darkModeToggle">
+                <span class="slider"></span>
+            </label>
+        </div>
+        <div id="timer">Time: 00:00</div>
+        <div class="board" id="board"></div>
+        <div class="status" id="status"></div>
+        <div class="score" id="score"></div>
+        <div id="aiThinking"></div>
+        <div class="actions">
+            <button id="restartBtn">Restart</button>
+            <button id="undoBtn">Undo</button>
+        </div>
+        <div class="developer">Developed with ❤️ by Basant</div>
+    </div>
+    <div id="winnerModal" class="modal">
+        <div class="modal-content">
+            <span class="close">&times;</span>
+            <h2 id="winnerMessage"></h2>
+            <button id="playAgainBtn">Play Again</button>
+        </div>
+    </div>
+    <script>
+        const board = document.getElementById('board');
+        const status = document.getElementById('status');
+        const score = document.getElementById('score');
+        const restartBtn = document.getElementById('restartBtn');
+        const undoBtn = document.getElementById('undoBtn');
+        const gameModeSelect = document.getElementById('gameMode');
+        const difficultySelect = document.getElementById('difficulty');
+        const darkModeToggle = document.getElementById('darkModeToggle');
+        const timerElement = document.getElementById('timer');
+        const aiThinkingElement = document.getElementById('aiThinking');
+        const winnerModal = document.getElementById('winnerModal');
+        const winnerMessage = document.getElementById('winnerMessage');
+        const playAgainBtn = document.getElementById('playAgainBtn');
+        const closeModal = document.getElementsByClassName('close')[0];
+
+        let currentBoard = Array(9).fill(null);
+        let currentPlayer = 'X';
+        let winner = null;
+        let winningLine = null;
+        let gameMode = 'single';
+        let difficulty = 'medium';
+        let scoreData = { X: 0, O: 0, draw: 0 };
+        let moveHistory = [];
+        let darkMode = false;
+        let startTime;
+        let timerInterval;
+
+        const winningCombos = [
+            [0, 1, 2], [3, 4, 5], [6, 7, 8], // Rows
+            [0, 3, 6], [1, 4, 7], [2, 5, 8], // Columns
+            [0, 4, 8], [2, 4, 6]             // Diagonals
+        ];
+
+        function initializeBoard() {
+            board.innerHTML = '';
+            for (let i = 0; i < 9; i++) {
+                const cell = document.createElement('div');
+                cell.classList.add('cell');
+                cell.dataset.index = i;
+                cell.addEventListener('click', () => handleClick(i));
+                board.appendChild(cell);
+            }
+            startTimer();
+        }
+
+        function handleClick(index) {
+            if (currentBoard[index] || winner) return;
+
+            currentBoard[index] = currentPlayer;
+            moveHistory.push([...currentBoard]);
+            updateBoard();
+
+            const [newWinner, newWinningLine] = checkWinner(currentBoard);
+            if (newWinner) {
+                winner = newWinner;
+                winningLine = newWinningLine;
+                updateScore();
+                showWinnerModal();
+                stopTimer();
+            } else {
+                currentPlayer = currentPlayer === 'X' ? 'O' : 'X';
+                if (currentPlayer === 'O' && gameMode === 'single' && !winner) {
+                    aiThinkingElement.textContent = "AI is thinking...";
+                    setTimeout(() => {
+                        makeAIMove();
+                        aiThinkingElement.textContent = "";
+                    }, 1000);
+                }
+            }
+
+            updateStatus();
+        }
+
+        function updateBoard() {
+            const cells = board.getElementsByClassName('cell');
+            for (let i = 0; i < cells.length; i++) {
+                cells[i].textContent = currentBoard[i];
+                cells[i].classList.toggle('highlight', winningLine && winningLine.includes(i));
+            }
+        }
+
+        function checkWinner(board) {
+            for (const combo of winningCombos) {
+                const [a, b, c] = combo;
+                if (board[a] && board[a] === board[b] && board[a] === board[c]) {
+                    return [board[a], combo];
+                }
+            }
+            return [board.every(cell => cell !== null) ? 'draw' : null, null];
+        }
+
+        function updateScore() {
+            if (winner === 'draw') {
+                scoreData.draw++;
+            } else {
+                scoreData[winner]++;
+            }
+            score.textContent = `X: ${scoreData.X} | O: ${scoreData.O} | Draws: ${scoreData.draw}`;
+        }
+
+        function updateStatus() {
+            if (winner) {
+                status.textContent = winner === 'draw' ? "It's a draw!" : `${winner} wins!`;
+            } else {
+                status.textContent = `Current player: ${currentPlayer}`;
+            }
+        }
+
+        function minimax(board, depth, isMaximizing) {
+            const [result] = checkWinner(board);
+            if (result === 'X') return -10  + depth;
+            if (result === 'O') return 10 - depth;
+            if (result === 'draw') return 0;
+
+            if (isMaximizing) {
+                let bestScore = -Infinity;
+                for (let i = 0; i < 9; i++) {
+                    if (!board[i]) {
+                        board[i] = 'O';
+                        bestScore = Math.max(bestScore, minimax(board, depth + 1, false));
+                        board[i] = null;
+                    }
+                }
+                return bestScore;
+            } else {
+                let bestScore = Infinity;
+                for (let i = 0; i < 9; i++) {
+                    if (!board[i]) {
+                        board[i] = 'X';
+                        bestScore = Math.min(bestScore, minimax(board, depth + 1, true));
+                        board[i] = null;
+                    }
+                }
+                return bestScore;
+            }
+        }
+
+        function makeAIMove() {
+            let bestScore = -Infinity;
+            let move = null;
+
+            for (let i = 0; i < 9; i++) {
+                if (!currentBoard[i]) {
+                    currentBoard[i] = 'O';
+                    let score = minimax(currentBoard, 0, false);
+                    currentBoard[i] = null;
+
+                    if (difficulty === 'easy') {
+                        score += Math.random() * 10; // Add randomness for easy mode
+                    } else if (difficulty === 'medium') {
+                        score += Math.random() * 5; // Add some randomness for medium mode
+                    }
+
+                    if (score > bestScore) {
+                        bestScore = score;
+                        move = i;
+                    }
+                }
+            }
+
+            if (move !== null) {
+                handleClick(move);
+            }
+        }
+
+        function handleUndo() {
+            if (moveHistory.length > 1 && !winner) {
+                moveHistory.pop(); // Remove current state
+                currentBoard = [...moveHistory[moveHistory.length - 1]];
+                currentPlayer = currentPlayer === 'X' ? 'O' : 'X';
+                winner = null;
+                winningLine = null;
+                updateBoard();
+                updateStatus();
+            }
+        }
+
+        function handleRestart() {
+            currentBoard = Array(9).fill(null);
+            currentPlayer = 'X';
+            winner = null;
+            winningLine = null;
+            moveHistory = [];
+            updateBoard();
+            updateStatus();
+            resetTimer();
+        }
+
+        function toggleDarkMode() {
+            darkMode = !darkMode;
+            document.body.classList.toggle('dark', darkMode);
+        }
+
+        function startTimer() {
+            startTime = Date.now();
+            timerInterval = setInterval(updateTimer, 1000);
+        }
+
+        function stopTimer() {
+            clearInterval(timerInterval);
+        }
+
+        function resetTimer() {
+            stopTimer();
+            timerElement.textContent = 'Time: 00:00';
+            startTimer();
+        }
+
+        function updateTimer() {
+            const elapsedTime = Math.floor((Date.now() - startTime) / 1000);
+            const minutes = Math.floor(elapsedTime / 60);
+            const seconds = elapsedTime % 60;
+            timerElement.textContent = `Time: ${minutes.toString().padStart(2, '0')}:${seconds.toString().padStart(2, '0')}`;
+        }
+
+        function showWinnerModal() {
+            winnerModal.style.display = "block";
+            winnerMessage.textContent = winner === 'draw' ? "It's a draw!" : `${winner} wins!`;
+        }
+
+        restartBtn.addEventListener('click', handleRestart);
+        undoBtn.addEventListener('click', handleUndo);
+        gameModeSelect.addEventListener('change', (e) => {
+            gameMode = e.target.value;
+            handleRestart();
+        });
+        difficultySelect.addEventListener('change', (e) => {
+            difficulty = e.target.value;
+        });
+        darkModeToggle.addEventListener('change', toggleDarkMode);
+        playAgainBtn.addEventListener('click', () => {
+            winnerModal.style.display = "none";
+            handleRestart();
+        });
+        closeModal.addEventListener('click', () => {
+            winnerModal.style.display = "none";
+        });
+
+        window.addEventListener('click', (event) => {
+            if (event.target == winnerModal) {
+                winnerModal.style.display = "none";
+            }
+        });
+
+        initializeBoard();
+        updateStatus();
+        score.textContent = `X: 0 | O: 0 | Draws: 0`;
+    </script>
+</body>
+</html>
